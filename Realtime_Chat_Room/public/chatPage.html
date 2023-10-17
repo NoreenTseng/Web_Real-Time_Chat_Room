@@ -1,0 +1,173 @@
+<!-- id: for js. class: for css-->
+<!DOCTYPE html>
+<html lang='en'>
+	<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+  import { getDatabase } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDi7b8uzUTxgZjHX6OZPUVIKw3o2Ma2lYE",
+    authDomain: "fse-web-chat-room.firebaseapp.com",
+    databaseURL: "https://fse-web-chat-room-default-rtdb.firebaseio.com",
+    projectId: "fse-web-chat-room",
+    storageBucket: "fse-web-chat-room.appspot.com",
+    messagingSenderId: "33476624455",
+    appId: "1:33476624455:web:8b2994aa615ed6cb5df162",
+    measurementId: "G-35JK59KZYL"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getDatabase(config);
+	</script>
+	<style>
+		/*********** 2nd chat room page (chatPage.html) *********/
+		.btn{
+			padding: 5px 15px;
+			background: orange;
+			color: black;
+			font-size: 10px;
+			border: 1px solid black;
+		}
+		.logout{
+			margin: 0 auto;
+			text-align: center;
+			padding-left: 20px;
+			padding-right: 10px;
+			display: flex;
+			align-items: center;
+			font-size: 25px;
+			justify-content: space-between;
+			background: lightblue;
+
+		}
+		.chatboxEnter {
+			padding: 20px;
+			text-align: center;
+			align-items: center;
+			font-size: 20px;
+			display: flex;
+    		justify-content: center; 
+		}
+		.chatboxEnter button[class="btn"]{
+			padding: 5px 10px;
+			background: orange;
+			color: black;
+			font-size: 20px;
+		}
+		.chatboxEnter input[type="text"]{
+			padding: 5px 10px;
+			background: white;
+			color: black;
+			font-size: 20px;
+		}
+		.chatboxEnter input[id="username"]{
+			padding: 5px 10px;
+			background: white;
+			color: black;
+			font-size: 20px;
+		}
+		.msgBlock{
+			margin: 8px;
+			border: 1px solid lightgrey;
+			background: lightgrey;
+			padding: 2px 10px 2px 20px;
+			justify-content: space-between;
+		}
+		.msgBlock span[class = "time"]{
+			border: 1px solid lightgrey;
+			padding: 2px 10px 2px 15px;
+			float: right;
+			color: grey;
+		}
+		.msgBlock span[class = "username"]{
+			font-weight:bold; 
+			font-size: 20px;
+		}
+	</style>
+	<head>
+		<meta charset = "UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<script src="/socket.io/socket.io.js"></script>
+		<link href = "#" rel="shortcut icon">
+		<title>Chat Room Page</title>
+	</head>
+	<body>
+		<form action="/home.html">
+			<div class="logout">
+				<p><b>FSE Chat Room</b></p>
+				<a class="btn" href='home.html'>Logout</a>
+			</div>
+		</form>
+		<br/><br/>
+		<!----------- Message Displaying => "msgBlock" --------------->
+		<div class='chat'></div>
+		
+		
+	<!----------- Message Entering --------------->
+		<div class="chatboxEnter">
+      		<form id="chatInfo">
+      			<!--<span><input type="text" id="username" placeholder="Enter Username"/></span>-->
+        		<span><input type="text" id="msg" placeholder="Enter Message"/></span>
+        		<button class="btn">Post</button>
+      		</form>
+    	</div>
+		<script>
+		var socket = io();
+		
+		//Add a new msg block to [class="chat"]
+		//chatPack is a object which has 3 elements: username, message, and time.
+		function displayNewMsgs(chatPack){
+			const newChatBlock = document.createElement("div");
+			newChatBlock.classList.add('msgBlock');
+			newChatBlock.innerHTML = 
+				`<span class="username">${chatPack.username}</span>
+				 <span class="time">${chatPack.time[0]} . ${chatPack.time[1]} . ${chatPack.time[2]} _ ${chatPack.time[3]} : ${chatPack.time[4]}</span>
+				 <p>${chatPack.message}</p>`
+			//Because .chat is a class type, use .querySelector()
+			document.querySelector(".chat").appendChild(newChatBlock);		
+		}
+		//display all msgs to block [class="chat"]
+		//"allmsgs" is a array which store an chat record array.
+		//The chat record array store object type that has 3 elements: username, message, and time.
+		function displayAllMsgs(allmsgs){
+			for(var i = 0; i < allmsgs.length; i++){
+				var allChatBlock = document.createElement("div");
+				allChatBlock.classList.add('msgBlock');
+				allChatBlock.innerHTML = 
+					`<span class="username">${allmsgs[i].username}</span>
+				 	<span class="time">${allmsgs[i].time[0]} . ${allmsgs[i].time[1]} . ${allmsgs[i].time[2]} _ ${allmsgs[i].time[3]} : ${allmsgs[i].time[4]}</span>
+				 	<p>${allmsgs[i].message}</p>`
+				//Because .chat is a class type, use .querySelector()
+				document.querySelector(".chat").appendChild(allChatBlock);
+			}
+		}
+		
+		/****** Connection Starts *********/
+		var userIndex;
+		 socket.on("2ndConnection", function(index){
+		 	userIndex = index;
+		 	console.log(index);
+            socket.emit("newM", "Hi from client~");
+            socket.on("recentMsgs", function(allmsgs){
+            	displayAllMsgs(allmsgs);
+            });
+        });
+        /********* When user submit a new message, it gets the input. *********/
+		chatInfo.addEventListener('submit', function(e){
+			e.preventDefault();	//prevent sending the form out to a file.
+			//var username = document.getElementById("username").value; //get the "username" input
+			var msg = document.getElementById("msg").value;	//get the "msg" input
+			socket.emit("newMessage", {userIndex, msg});
+			//remove an old msg that has sent already
+			e.target.elements.msg.value = "";
+		});
+		/********* Dispaly the new messages from client in the chat room *********/
+		socket.on("newMessageDispaly", function(chatPack){
+			displayNewMsgs(chatPack);
+		});
+		</script>	
+	</body>
+</html>
+

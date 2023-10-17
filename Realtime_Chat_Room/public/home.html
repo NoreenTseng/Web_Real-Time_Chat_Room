@@ -1,0 +1,95 @@
+<!-- id: for js. class: for css-->
+<!DOCTYPE html>
+<html lang='en'>
+	<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+  import { getDatabase } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDi7b8uzUTxgZjHX6OZPUVIKw3o2Ma2lYE",
+    authDomain: "fse-web-chat-room.firebaseapp.com",
+    databaseURL: "https://fse-web-chat-room-default-rtdb.firebaseio.com",
+    projectId: "fse-web-chat-room",
+    storageBucket: "fse-web-chat-room.appspot.com",
+    messagingSenderId: "33476624455",
+    appId: "1:33476624455:web:8b2994aa615ed6cb5df162",
+    measurementId: "G-35JK59KZYL"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getDatabase(config);
+	</script>
+	<style>
+		/*********** 1st login page (home.html) *********/
+		.logpage{
+			padding-top: 30px;
+			text-align: center;
+			font-size: 25px;
+		}
+		.logpage input[type = "text"], input[type = "password"]{
+			padding-top: 5px;
+			font-size: 20px;
+		}
+
+		input[type = "text"], input[type = "password"]{
+			background: lightblue;
+			color: black;
+		}
+	</style>
+	<head>
+		<meta charset = "UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link href = "#" rel="shortcut icon">
+		<script src="/socket.io/socket.io.js"></script>
+		<title>FSE Web Chat Room Home Page</title>
+	</head>
+	<body>
+    	<h1 style="text-align:center">FSE Chat Room</h1>
+    		<form action="chatPage.html" class='logpage' id="logIn">
+      			<p>Username</p>
+      			<input type="text" id="username" placeholder="Enter Name" required>
+      			<p>Password</p>
+     			<input type="password" id="password" placeholder="Enter Password" required>
+     			<br/><br/>
+        		<button class="btn">Submit</button>
+  			</form>
+  		<script>
+  			var socket = io();
+  			/****** Connection Starts *********/
+  			socket.on('connection', function(){
+  				console.log("connection OK");
+  			});
+		 	socket.on("1stConnection", function(msg){
+		 		console.log(msg);
+            	socket.emit("newUser", "Hi from client~");
+            });
+           	socket.on("1stcheck", function(m){
+            	console.log(m);
+       		});
+  			
+  			logIn.addEventListener('submit', function(e){
+				//e.preventDefault();	//prevent sending the form out to a file.
+				var username = document.getElementById("username").value; //get the "username" input
+				var password = document.getElementById("password").value;	//get the "password" input
+				var user = {username, password};
+				socket.emit("userLoginInfo", user);
+				alert("Welcom new Friend, register and join us!");
+				/*socket.on("userCheck", function(check){
+					if(check == 1){
+						//alert("Welcom new Friend, register and join us!");
+						window.location.href = "https://localhost:3000/chatPage.html";	
+					}
+					else{
+						alert("Welcom new Friend, register and join us!");
+						window.location.href = "https://localhost:3000/home.html";	
+					}
+				});*/
+				
+		});
+  		</script>
+  		
+	</body>
+</html>
